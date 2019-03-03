@@ -1,0 +1,68 @@
+<html>
+	<head>
+		<title>CPSC 314 Assignment 4</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+
+<script src="js/three.min.js"></script>
+<script src="js/OBJLoader.js"></script>
+<script type="x-shader/x-vertex" id="vertexShader">
+      // GLSL vertex shader
+    varying vec4 v_Normal;
+    varying vec4 v_ViewPosition;
+
+  void main() {
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+      vec4 normal4 = vec4(normal,0);
+      v_Normal = modelViewMatrix*normal4;
+      v_ViewPosition = modelViewMatrix*vec4(position,1.0);
+  }
+</script>
+<script type="x-shader/x-fragment" id="myPhong">
+  // GLSL fragment shader
+  uniform vec3 lightColor;        // light: diffuse + specular
+  uniform vec3 ambientColor;      // light: ambient
+  uniform vec3 lightPosition;     // light position
+  uniform vec3 ka;                // ambient reflectance
+  uniform vec3 kd;                // diffuse reflectance
+  uniform vec3 ks;                // specular reflectance
+  uniform float nSpec;            // shininess
+  varying vec4 v_Normal;          // vertex normal, in VCS
+  varying vec4 v_ViewPosition;    // vertex position, in VCS
+
+  void main() {
+
+    vec3 diffuse;
+    vec3 ambient;
+    vec3 specular;
+
+    vec4 V = normalize(v_ViewPosition);
+    vec4 L = normalize(vec4(lightPosition, 1.0) - V); //light dir
+    vec4 N = normalize(v_Normal); //vertex normal
+    vec4 R = normalize(reflect(L, N)); //reflected ray dir
+
+        // AMBIENT TERM
+
+      ambient = ka*ambientColor;
+
+        // DIFFUSE TERM
+
+      diffuse = kd*lightColor*dot(N,L);
+
+        // SPECULAR TERM
+
+      specular = ks*lightColor*pow(dot(R,V), nSpec);
+
+      // TOTAL
+
+      gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
+  }
+</script>
+<script src="js/loadOBJ.js"></script>
+<script src="a4.js"></script>
+</body>
+</html>
